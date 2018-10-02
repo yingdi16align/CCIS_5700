@@ -3,6 +3,7 @@ import time
 import _thread
 import struct
 import re
+
 host_name = socket.gethostname()
 host_ip = socket.gethostbyname(host_name)
 host_port = 8181
@@ -49,13 +50,13 @@ def calculate(a, b, operation):
         return num1 - num2
     elif operation == "/":
         if  num2 == 0:
-            return "error"
+            return "a number cannot be devided by 0"
         else:
             return num1 / num2
     elif operation == "*":
         return num1 * num2
     
-error_message="error"
+error_message=" the number of bytes sent is bigger than the buffer size"
 def handler(conn):
     # count of the data received
     cnt = 0;
