@@ -69,10 +69,7 @@ def get_message(message):
         return message[7:]
     return message[6:]
     
-def get_sequence(msg):
-    return struct.unpack("!H", msg[2:4])[0]
-    
-def is_ack(message, target):
+def check_ack(message, target):
     message_type = struct.unpack("!H", message[0:2])[0]
     sequence = struct.unpack("!H", message[2:4])[0]
     return (message_type == config.MSG_TYPE_ACK and sequence == target)
@@ -81,13 +78,10 @@ def generate_packet(message, message_type, sequence):
     if len(message) % 2 != 0:
         message = b'\x00' + message
     sum = message_type + sequence
-    s = (sum & 0xffff) + (sum >> 16)
+    part1 = (sum & 0xffff) + (sum >> 16)
     for i in range(0, len(message), 2):
-        w = (message[i] << 8) + message[i + 1]
-        sum2 = s + w
-        s = (sum2 & 0xffff) + (sum2 >> 16)
-    checksum = ~s & 0xffff
-    return struct.pack("!H", message_type) + \
-    struct.pack("!H", sequence) + \
-    struct.pack("!H", checksum) + \
-    message
+        part2 = (message[i] << 8) + message[i + 1]
+        sum2 = part1 + part2
+        part1 = (sum2 & 0xffff) + (sum2 >> 16)
+    checksum = ~part1 & 0xffff
+    return struct.pack("!H", message_type) + struct.pack("!H", sequence) + struct.pack("!H", checksum) + message
