@@ -2,6 +2,7 @@ import udt
 import util
 import config
 import time
+import struct
 
 # Stop-And-Wait reliable transport protocol.
 class StopAndWait:
@@ -36,7 +37,7 @@ class StopAndWait:
             self._time = time.time()
             return False
         elif not self.received_packet is None:
-                if not (util.is_ack(self.received_packet, sequence)):
+                if not (util.check_ack(self.received_packet, sequence)):
                     return False
                 else:
                     #clear the time
@@ -67,7 +68,7 @@ class StopAndWait:
         # TODO: impl protocol to handle arrived packet from network layer.
         # call self.msg_handler() to deliver to application layer.
         if self.role == "receiver":
-            if util.get_sequence(message) != self.current_state:
+            if (struct.unpack("!H", message[2:4])[0])!= self.current_state:
                 if (self.current_state  != 1):
                     self.send_packet_message(b'',1) 
                 else:
