@@ -77,17 +77,17 @@ def is_ack(message, target):
     sequence = struct.unpack("!H", message[2:4])[0]
     return (message_type == config.MSG_TYPE_ACK and sequence == target)
     
-def generate_packet(payload, message_type, sequence):
-    if len(payload) % 2 != 0:
-        payload = b'\x00' + payload
+def generate_packet(message, message_type, sequence):
+    if len(message) % 2 != 0:
+        message = b'\x00' + message
     sum = message_type + sequence
     s = (sum & 0xffff) + (sum >> 16)
-    for i in range(0, len(payload), 2):
-        w = (payload[i] << 8) + payload[i + 1]
+    for i in range(0, len(message), 2):
+        w = (message[i] << 8) + message[i + 1]
         sum2 = s + w
         s = (sum2 & 0xffff) + (sum2 >> 16)
     checksum = ~s & 0xffff
     return struct.pack("!H", message_type) + \
     struct.pack("!H", sequence) + \
     struct.pack("!H", checksum) + \
-    payload
+    message
