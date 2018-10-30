@@ -36,7 +36,7 @@ class StopAndWait:
             self._time = time.time()
             return False
         elif not self.received_packet is None:
-                if (util.check_corrupted(self.received_packet) or not (util.is_ack(self.received_packet, sequence))):
+                if not (util.is_ack(self.received_packet, sequence)):
                     return False
                 else:
                     #clear the time
@@ -67,15 +67,19 @@ class StopAndWait:
         # TODO: impl protocol to handle arrived packet from network layer.
         # call self.msg_handler() to deliver to application layer.
         if self.role == "receiver":
-            if util.check_corrupted(message) or util.get_sequence(message) != self.current_state:
+            if util.get_sequence(message) != self.current_state:
                 if (self.current_state  != 1):
                     self.send_packet_message(b'',1) 
                 else:
                     self.send_packet_message(b'',0) 
             else:
                 data = util.get_message(message)
-                self.msg_handler(data.decode("utf-8"))
-                self.send_packet_message(b'',self.current_state)
+                try:
+                    self.msg_handler(data.decode("utf-8"))
+                    self.send_packet_message(b'',self.current_state)
+                except:
+                    print("message is corrupted")
+                    self.send_packet_message(b'',self.current_state)
         else:
             self.received_packet = message
 
